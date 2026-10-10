@@ -405,7 +405,7 @@ public abstract class MixinChunkMap extends MixinChunkStorage implements Generat
     private void cc_unlight(CubeAccess cube) {
         CubicLight light = ((CubeSource) level.getChunkSource()).cc_cubicLight();
         if (light != null) {
-            light.onCubeUnloaded(cube);
+            light.onCubeUnloaded(cube, true); // its roof was noted as its unload was scheduled (cc_scheduleUnload)
             level.getChunkSource().getLightEngine().tryScheduleUpdate();
         }
     }

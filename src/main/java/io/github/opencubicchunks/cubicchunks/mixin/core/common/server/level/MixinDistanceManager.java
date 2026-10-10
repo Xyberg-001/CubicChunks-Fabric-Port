@@ -51,7 +51,17 @@ public abstract class MixinDistanceManager implements MarkableAsCubic, CubeYRang
         ((MarkableAsCubic) this.simulationChunkTracker).cc_setCubic();
         ((MarkableAsCubic) this.naturalSpawnChunkCounter).cc_setCubic();
         ((MarkableAsCubic) this.playerTicketManager).cc_setCubic();
+        ((io.github.opencubicchunks.cubicchunks.mixin.access.common.ThrottlingChunkTaskDispatcherAccess) this.ticketDispatcher)
+                .cc_setMaxChunksInExecution(PLAYER_TICKETS_IN_FLIGHT);
     }
+
+    /**
+     * Player tickets being added at once (vanilla: 4). Each holds its slot until its position is entity-ticking, which paces how fast a
+     * player's view loads as they move. Crossing into the next chunk adds about 21 of vanilla's positions, but crossing into the next cube
+     * adds a whole face of the view (121 cubes at a view distance of 10): 4 at a time, a player flying at 20 blocks a second left the
+     * tickets further and further behind (no land ahead of them), and the backlog loaded all at once when they stopped (a stall of seconds).
+     */
+    private static final int PLAYER_TICKETS_IN_FLIGHT = Integer.getInteger("cubicchunks.playerTicketsInFlight", 64);
 
     @Override public boolean cc_isCubic() {
         return cc_isCubic;

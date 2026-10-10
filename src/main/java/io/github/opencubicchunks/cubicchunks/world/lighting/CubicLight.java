@@ -223,9 +223,19 @@ public final class CubicLight {
 
     /** A cube has left: its sections' light goes, and the sky over its columns is worked out again when next needed. */
     public void onCubeUnloaded(CubeAccess cube) {
+        onCubeUnloaded(cube, false);
+    }
+
+    /**
+     * As {@link #onCubeUnloaded(CubeAccess)}; {@code roofNoted}: its roof was noted as its unload was scheduled (the server, see
+     * MixinChunkMap.cc_scheduleUnload), and a leaving cube's blocks no longer change, so it is not worked out again (a cube's roof is
+     * read block by block, column by column, on the server thread: noted three times over, at load and twice as it left, it was a sixth of
+     * the server thread's time while a player flew over new land).
+     */
+    public void onCubeUnloaded(CubeAccess cube, boolean roofNoted) {
         CubeLightEngine engine = this.queued.get();
         CubePos cubePos = cube.cc_getCubePos();
-        if (this.roofs != null) {
+        if (this.roofs != null && !roofNoted) {
             this.roofs.record(cube); // as it leaves: the sky stays stopped where it stops it
         }
         engine.runPendingUpdates(new ChunkPos(Coords.cubeToSection(cubePos.getX(), 0), Coords.cubeToSection(cubePos.getZ(), 0)));

@@ -69,6 +69,7 @@ public class CubicRenderClientGameTest implements FabricClientGameTest {
             if (stage("frames")) frames(context, world);
             if (stage("scans")) blockScans(context, world);
             if (stage("viewdistance")) viewDistance(context, world);
+            if (stage("flight")) flight(context, world);
             if (stage("shaders")) shaders(context, world);
             if (stage("voxy")) voxy(context, world);
             if (stage("dh")) distantHorizons(context, world);
@@ -1144,6 +1145,101 @@ public class CubicRenderClientGameTest implements FabricClientGameTest {
             context.waitTicks(LOAD_TICKS);
             LOGGER.info("[cc-gametest] view distance: render distance {}: {}", distance, loadedCounts(context, world));
         }
+    }
+
+    /** Each server tick's length while recording (the flight stage). */
+    private static final java.util.concurrent.ConcurrentLinkedQueue<Long> TICK_NANOS = new java.util.concurrent.ConcurrentLinkedQueue<>();
+    private static volatile long tickStart;
+    private static volatile boolean recordTicks, ticksHooked;
+
+    private static void hookTicks() {
+        if (ticksHooked) return;
+        ticksHooked = true;
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.START_SERVER_TICK.register(s -> tickStart = System.nanoTime());
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(s -> {
+            if (recordTicks) TICK_NANOS.add(System.nanoTime() - tickStart);
+        });
+    }
+
+    /**
+     * Flying fast over new land, as a spectator at a view distance of 10 (CC_GT_FLIGHT_VIEW): the player is moved on by the client every tick
+     * in a straight line, at sprint-flying speed and then at 50 blocks a second (CC_GT_FLIGHT_SECONDS a leg, 30 by default), and its
+     * movement packets move it on the server as a flying player's do (a /tp each tick would not: the server waits on every teleport's
+     * confirmation and never moves the player's tickets). Every five seconds it logs how many of the 75 cubes round the player the client
+     * and the server hold, and after each leg the server's tick lengths. Before player tickets were let through 64 at a time (see
+     * MixinDistanceManager.PLAYER_TICKETS_IN_FLIGHT) the land ahead stopped loading at speed: 39 of the 75 cubes on the client at 50 blocks
+     * a second, and the backlog loaded all at once when the player stopped.
+     */
+    private static void flight(ClientGameTestContext context, TestSingleplayerContext world) {
+        hookTicks();
+        int seconds = Integer.parseInt(System.getenv().getOrDefault("CC_GT_FLIGHT_SECONDS", "30"));
+        int view = Integer.parseInt(System.getenv().getOrDefault("CC_GT_FLIGHT_VIEW", "10"));
+        int y = 40;
+        world.getServer().runCommand("tp @a 0 " + y + " 0");
+        context.runOnClient(mc -> {
+            mc.options.renderDistance().set(view);
+            mc.options.broadcastOptions();
+        });
+        context.waitTicks(LOAD_TICKS);
+        LOGGER.info("[cc-gametest] flight start at Y {}: {}", y, loadedCounts(context, world));
+        double[][] legs = {{1.1, 0}, {0, 2.5}}; // blocks a tick east, south: 22 then 50 blocks a second
+        double[] start = context.computeOnClient(mc -> new double[]{mc.player.getX(), mc.player.getZ()});
+        double x = start[0], z = start[1];
+        for (double[] leg : legs) {
+            TICK_NANOS.clear();
+            recordTicks = true;
+            long t0 = System.nanoTime();
+            for (int i = 0; i < seconds * 20; i++) {
+                x += leg[0];
+                z += leg[1];
+                double tx = x, tz = z;
+                context.runOnClient(mc -> mc.player.setPos(tx, y, tz));
+                context.waitTick();
+                if (i % 100 == 99) {
+                    int at = i;
+                    int client = context.computeOnClient(mc -> cubesRound((CubeSource) mc.level.getChunkSource(), mc.player));
+                    int server = world.getServer().computeOnServer(sv -> cubesRound((CubeSource) sv.overworld().getChunkSource(),
+                            sv.getPlayerList().getPlayers().getFirst()));
+                    LOGGER.info("[cc-gametest] flight tick {}: of the 75 cubes round the player the client holds {}, the server {}", at + 1, client, server);
+                }
+            }
+            recordTicks = false;
+            double wall = (System.nanoTime() - t0) / 1e9;
+            long[] t = TICK_NANOS.stream().mapToLong(Long::longValue).sorted().toArray();
+            long over50 = 0, over250 = 0, over1000 = 0, lagNanos = 0, sum = 0;
+            for (long n : t) {
+                sum += n;
+                if (n > 50_000_000L) {
+                    over50++;
+                    lagNanos += n - 50_000_000L;
+                }
+                if (n > 250_000_000L) over250++;
+                if (n > 1_000_000_000L) over1000++;
+            }
+            int n = t.length;
+            LOGGER.info(String.format(java.util.Locale.ROOT,
+                    "[cc-gametest] flight %.0f blocks/s: %d server ticks in %.1f s, mean %.1f ms, median %.1f, p95 %.1f, max %.0f ms; over 50 ms %d, "
+                            + "over 250 ms %d, over 1 s %d; time behind %.1f s; %s",
+                    20 * Math.hypot(leg[0], leg[1]), n, wall, n == 0 ? 0 : sum / 1e6 / n, n == 0 ? 0 : t[n / 2] / 1e6,
+                    n == 0 ? 0 : t[Math.min(n - 1, (int) (n * 0.95))] / 1e6, n == 0 ? 0 : t[n - 1] / 1e6, over50, over250, over1000,
+                    lagNanos / 1e9, loadedCounts(context, world)));
+        }
+        LOGGER.info("[cc-gametest] all flights done");
+    }
+
+    /** Of the 75 cubes round an entity (5 by 3 by 5), how many are held at FULL. */
+    private static int cubesRound(CubeSource cubes, net.minecraft.world.entity.Entity e) {
+        int px = Coords.blockToCube((int) Math.floor(e.getX())), py = Coords.blockToCube((int) Math.floor(e.getY())),
+                pz = Coords.blockToCube((int) Math.floor(e.getZ()));
+        int held = 0;
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                for (int dz = -2; dz <= 2; dz++) {
+                    if (cubes.cc_getCube(px + dx, py + dy, pz + dz, ChunkStatus.FULL, false) != null) held++;
+                }
+            }
+        }
+        return held;
     }
 
     private static String loadedCounts(ClientGameTestContext context, TestSingleplayerContext world) {
