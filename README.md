@@ -13,13 +13,14 @@ in its log saying why).
 
 ## What it does
 
+- **Only the overworld is cubic.** The Nether, the End and dimensions added by other mods always keep vanilla's chunks and vanilla's
+  heights, in a cubic world too: their generators make chunks, not cubes.
 - **Cubes in three dimensions:** loading, generation, saving (region files of cubes), lighting (sky light through the full height),
   networking, rendering, entities, mob spawning, random and scheduled ticks all work per cube. `verticalViewDistance` in
   `config/cubicchunks_common.toml` sets how many cubes up and down a player sees.
 - **Per world:** each world is cubic or not, and has its own lowest and highest Y, chosen when it is made (the **Cubic Chunks** tab on
   the world creation screen; on a server, `generateNewWorldsAsCC`, `newWorldMinY` and `newWorldMaxY`) and kept in
-  `<world>/cubicchunks/world.toml`. Worlds made without it stay ordinary worlds. Only the overworld is cubic; the Nether and the End keep
-  vanilla's chunks.
+  `<world>/cubicchunks/world.toml`. Worlds made without it stay ordinary worlds.
 - **Height:** `heightLimit` in `config/cubicchunks_common.toml`. Block positions are packed into 64 bits everywhere, so height and
   horizontal reach trade off: 32768 (the default) holds about Y -32,400 to 32,400 and reaches about 8.4 million blocks out on x and z;
   8192 holds about Y -7,900 to 7,900 and reaches about 16.7 million. A new world holds Y -11,000 to 9,000 unless chosen otherwise.
@@ -31,8 +32,8 @@ in its log saying why).
 ## For players
 
 Download the jar from [Releases](https://github.com/Xyberg-001/CubicChunks-Fabric-Port/releases) and install it with Fabric API, next to
-a mod whose world type supports cubes. Create a world of that type and switch Cubic Chunks on in its tab. It is a beta: keep backups of
-worlds you care about.
+a mod whose world type supports cubes. Create a world of that type and switch Cubic Chunks on in its tab: its overworld becomes cubic,
+while the Nether and the End stay as they always are. It is a beta: keep backups of worlds you care about.
 
 ## For mod developers
 
@@ -49,8 +50,10 @@ dependencies {
 
 In `fabric.mod.json`, `"suggests": { "cubicchunks": "*" }` keeps Cubic Chunks optional (or put it under `depends` if your mod needs it).
 
-**2. Register a cube generator** for your chunk generator's class at startup. Keep the Cubic Chunks classes in a class of their own that is
-only touched when the mod is there, so your mod still loads without it:
+**2. Register a cube generator** for your chunk generator's class at startup. Only the overworld is cubic, so it is your world type's
+overworld generator that counts: a world is cubic only when its overworld's chunk generator has a cube generator registered, and the
+levels of every other dimension (the Nether, the End, your own) stay vanilla chunks, with `CubicApi.isCubic` false for them. Keep the
+Cubic Chunks classes in a class of their own that is only touched when the mod is there, so your mod still loads without it:
 
 ```java
 // in your ModInitializer
