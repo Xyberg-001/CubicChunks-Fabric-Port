@@ -1,59 +1,133 @@
 # Cubic Chunks Fabric Port
 
-## This fork: Fabric, Minecraft 26.3 (branch `fabric-26.3`)
+A port of [Cubic Chunks 3](https://github.com/OpenCubicChunks/CubicChunks3) to Fabric, for Minecraft 26.3 (branch `fabric-26.3`).
 
-A working port of Cubic Chunks 3 to Fabric for Minecraft 26.3, made for [Orbis Terrarum](https://modrinth.com/mod/orbis-terrarum)
-(the real Earth at 1:1, where mountains need far more height than vanilla's).
+Vanilla stores a world in chunks that span its whole height, so a world can only be as tall as every chunk is. Cubic Chunks stores it in
+32 x 32 x 32 cubes instead, and loads them around players in three dimensions: a world can hold tens of thousands of blocks of height,
+and only the cubes near a player are in memory, whatever the height.
 
-**It is an engine, not a world type.** Cubic Chunks stores the world in 32-block cubes so it can be thousands of blocks tall and deep,
-and it loads, lights, saves, sends and renders those cubes. It does not make terrain: a world is cubic only when its world type brings
-its own cube generator (Orbis Terrarum's does). For any other world type the Cubic Chunks switch on the world creation screen is greyed
-out, and a server makes such a world vanilla (with a line in its log saying why).
+**It is an engine, not a world type.** Cubic Chunks loads, generates, lights, saves, sends and renders cubes; the terrain in them comes from
+the mod that owns the world type, through a small API. A world can be cubic only if its world type has registered a cube generator; for any
+other world type the Cubic Chunks switch on the world creation screen is greyed out, and a server makes such a world vanilla (with a line
+in its log saying why).
 
-- **Joining servers:** with it installed you can still join servers that don't run it; their worlds play as vanilla. A server that runs
-  it needs every player to have it (with the same `heightLimit`), whether its world is cubic or not.
-- **Only the overworld is cubic.** The Nether and the End keep vanilla's chunks.
-- **Height:** each world chooses its lowest and highest Y when it is made, within `heightLimit` in `config/cubicchunks_common.toml`
-  (32768, the default, or 8192). A taller limit reaches less far out on x and z, because block positions are packed into 64 bits:
-  32768 reaches about 8.4 million blocks from the centre, 8192 about 16.7 million.
-- **Works with** Sodium, Iris, Voxy (it shows Y -4096 to 4095 of a cubic world) and Distant Horizons (a 4096-block window, set with
-  `distantHorizonsMinY`).
+## What it does
 
-### Playing an Orbis Terrarum world at true height (beta)
+- **Cubes in three dimensions:** loading, generation, saving (region files of cubes), lighting (sky light through the full height),
+  networking, rendering, entities, mob spawning, random and scheduled ticks all work per cube. `verticalViewDistance` in
+  `config/cubicchunks_common.toml` sets how many cubes up and down a player sees.
+- **Per world:** each world is cubic or not, and has its own lowest and highest Y, chosen when it is made (the **Cubic Chunks** tab on
+  the world creation screen; on a server, `generateNewWorldsAsCC`, `newWorldMinY` and `newWorldMaxY`) and kept in
+  `<world>/cubicchunks/world.toml`. Worlds made without it stay ordinary worlds. Only the overworld is cubic; the Nether and the End keep
+  vanilla's chunks.
+- **Height:** `heightLimit` in `config/cubicchunks_common.toml`. Block positions are packed into 64 bits everywhere, so height and
+  horizontal reach trade off: 32768 (the default) holds about Y -32,400 to 32,400 and reaches about 8.4 million blocks out on x and z;
+  8192 holds about Y -7,900 to 7,900 and reaches about 16.7 million. A new world holds Y -11,000 to 9,000 unless chosen otherwise.
+- **Servers:** with Cubic Chunks installed you can still join servers that don't run it (their worlds play as vanilla). A server that runs it
+  needs every player to have it, with the same `heightLimit`.
+- **Works with** Sodium, Iris, Voxy and Distant Horizons. Voxy holds Y -4096 to 4095 of a cubic world and Distant Horizons a 4096-block
+  window (`distantHorizonsMinY`), so terrain beyond those is missing from their far view.
 
-Download `cubicchunks-<version>+26.3.jar` from [Releases](https://github.com/Xyberg-001/CubicChunks-Fabric-Port/releases). It is a beta: keep
-backups of worlds you care about.
+## For players
 
-1. Install Fabric Loader, Fabric API, [Orbis Terrarum](https://modrinth.com/mod/orbis-terrarum) 1.1.0 or later (the 26.3 jar) and this
-   jar. You can keep it installed: servers without it still work as usual.
-2. Create World, World type Orbis Terrarum, then the **Cubic Chunks** tab: switch it on. A new world holds Y -11000 to 9000 unless you
-   change it there: the deepest sea floor to above the top of Everest. Sea level is at Y 0 and one block is one metre all the way up
-   and down: nothing is squeezed.
+Download the jar from [Releases](https://github.com/Xyberg-001/CubicChunks-Fabric-Port/releases) and install it with Fabric API, next to
+a mod whose world type supports cubes. Create a world of that type and switch Cubic Chunks on in its tab. It is a beta: keep backups of
+worlds you care about.
 
-Without Voxy or Distant Horizons the world shows as far as your render distance (and `verticalViewDistance` up and down). Voxy shows
-only Y -4096 to 4095 of a cubic world, and Distant Horizons a 4096-block window, so land above or below those is missing from their far
-view until they hold more height. A cubic world on a server works the same way, as long as every player has this jar.
+## For mod developers
 
-### Giving your world type cubic terrain
+Your mod keeps its own world type and chunk generator; Cubic Chunks asks it for the terrain of each cube.
 
-Compile against the API jar (`./gradlew apiJar`, package `io.github.opencubicchunks.cubicchunks.api`) and register a cube generator for
-your chunk generator's class in your mod initializer:
+**1. Compile against the API.** The API jar (`cubicchunks-<version>-api.jar`, attached to each release, or `./gradlew apiJar`) holds only
+the `io.github.opencubicchunks.cubicchunks.api` package, which is the public API; everything else in Cubic Chunks may change at any time.
 
-```java
-CubicApi.registerCubeGenerator(MyChunkGenerator.class, (level, chunkGenerator) -> new MyCubeGenerator(level));
+```groovy
+dependencies {
+    modCompileOnly files("libs/cubicchunks-1.0.0+26.3-api.jar")
+}
 ```
 
-A `CubeGenerator` fills one 32x32x32 cube at a time:
+In `fabric.mod.json`, `"suggests": { "cubicchunks": "*" }` keeps Cubic Chunks optional (or put it under `depends` if your mod needs it).
 
-- `generate(CubeTerrain)`: the terrain, on a world generation thread (the returned future may finish later, after a download).
-- `decorate(CubeTerrain)`: trees, ores and the like, once the cubes around it have their terrain; writes only its own cube.
-- `usesStructures()`: true to have the level's columns work out vanilla structure starts and references (place their blocks yourself in
-  `decorate`, reading the starts with `CubicApi.column`).
-- `surface(x, z)`: what a column looks like from afar, for Distant Horizons.
+**2. Register a cube generator** for your chunk generator's class at startup. Keep the Cubic Chunks classes in a class of their own that is
+only touched when the mod is there, so your mod still loads without it:
 
-`CubicApi` also tells whether a level is cubic (`isCubic`), its heights (`minY`, `maxY`), whether a world type supports cubes
-(`supportsCubes`), and when cubes load and unload (`addCubeListener`). `CubicClientApi.isNewWorldCubic` tells the world creation screen's
-choice. Everything outside the `api` package may change at any time.
+```java
+// in your ModInitializer
+if (FabricLoader.getInstance().isModLoaded("cubicchunks")) MyCubicSupport.register();
+
+final class MyCubicSupport {
+    static void register() {
+        CubicApi.registerCubeGenerator(MyChunkGenerator.class,
+                (level, chunkGenerator) -> new MyCubeGenerator((MyChunkGenerator) chunkGenerator));
+    }
+}
+```
+
+**3. Fill cubes.** `generate` gets one 32 x 32 x 32 cube at a time, on a world generation thread. Positions are world positions; writes
+outside the cube are ignored, so you can paint whole columns and keep what falls inside:
+
+```java
+final class MyCubeGenerator implements CubeGenerator {
+    private final MyChunkGenerator terrain;
+
+    MyCubeGenerator(MyChunkGenerator terrain) {
+        this.terrain = terrain;
+    }
+
+    @Override
+    public CompletableFuture<?> generate(CubeTerrain cube) {
+        BlockState stone = Blocks.STONE.defaultBlockState();
+        for (int x = cube.minX(); x < cube.minX() + CubeTerrain.SIZE; x++) {
+            for (int z = cube.minZ(); z < cube.minZ() + CubeTerrain.SIZE; z++) {
+                int ground = terrain.groundHeight(x, z);       // your own height function
+                cube.fill(x, cube.minY(), ground, z, stone);   // clipped to the cube
+            }
+        }
+        // biomes: cube.fillBiomes(resolver, sampler) with your biome source's resolver
+        return CompletableFuture.completedFuture(null);        // or a future that completes later (after a download)
+    }
+}
+```
+
+### API reference
+
+**`CubeGenerator`** (implemented by your mod)
+
+| Method | What it is for |
+|---|---|
+| `generate(CubeTerrain)` | The cube's terrain and biomes. Must not touch other cubes. The returned future may complete later, on any thread. |
+| `decorate(CubeTerrain)` | Trees, ores, buildings, block entities and entities, once the cubes around it have their terrain. Writes only its own cube: something crossing cubes (a tree on an edge) is made by each cube keeping its own part, so the answer must be the same for every cube asked. |
+| `usesStructures()` | `true` to have vanilla structure starts and references worked out per column with your chunk generator (so `/locate`, maps and structure mob spawns work). You place the structures' blocks yourself in `decorate`, reading the starts with `CubicApi.column`. |
+| `surface(x, z)` | What a column looks like from afar (surface Y and blocks, water), for Distant Horizons. `null` if you can't tell without generating. Must be thread safe. |
+
+**`CubeTerrain`** (the cube being generated): `minX/minY/minZ/maxY`, `setBlock`, `fill` (part of a column), `markForPostProcessing`
+(stairs, fences and walls fitted to their neighbours later), `setBlockEntity`, `addEntity`, `scheduleBlockTick`, `scheduleFluidTick`,
+`fillBiomes`. Writes go straight into the cube's sections, without neighbour updates or light.
+
+**`CubicApi`**
+
+| Method | What it does |
+|---|---|
+| `isCubic(level)` | Whether a level is cubic. |
+| `minY(level)`, `maxY(level)` | The heights a level's world holds. Use these rather than `Level.getMinY/getMaxY`, which report the dimension type's. |
+| `borderReach()` | How far x and z reach with Cubic Chunks installed (in every world). |
+| `supportsCubes(chunkGenerator)` | Whether worlds of a chunk generator can be cubic (a cube generator is registered for it). |
+| `cubeGenerator(level)`, `usesStructures(level)` | A cubic level's cube generator, and whether it places structures. |
+| `column(level, chunkX, chunkZ, status)` | A column (it holds the structure starts and references) if it has reached the status; never waits. |
+| `addCubeListener(listener)` | Told when cubes become full (their blocks can be read) and when they unload, on the server thread. |
+| `isCubeLoaded`, `isCubeEmpty` | Whether a cube is loaded and full, or all air; from any thread, never waiting. |
+| `readCube(level, x, y, z)` | A cube's blocks from memory or disk (waits for the disk, so not on the server thread). |
+| `loadCube`, `releaseCube` | Load (and generate) a cube and hold it with a ticket, as a pre-generation sweep does; server thread. |
+| `pendingCubeWrites(level)` | Cube and column writes still queued for the disk. |
+
+**`CubicClientApi.isNewWorldCubic(state)`**: whether the world being set up on the world creation screen will be cubic, so your own world
+settings can follow the Cubic Chunks tab.
+
+## Building
+
+JDK 25. Clone with `--recursive` (the `CubicChunksCore` submodule), then `./gradlew jar` (the mod) and `./gradlew apiJar` (the API jar);
+both land in `build/libs`. `./gradlew runClientGameTest` runs the client game tests.
 
 ---
 

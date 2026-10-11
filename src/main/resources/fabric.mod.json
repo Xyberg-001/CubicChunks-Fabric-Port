@@ -32,8 +32,5 @@
     "minecraft": "~${minecraft_version}",
     "java": ">=25",
     "fabric-api": "*"
-  },
-  "suggests": {
-    "orbisterrarum": "*"
   }
 }

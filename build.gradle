@@ -195,6 +195,7 @@ tasks.register("apiJar", Jar) {
     from(sourceSets.main.output) {
         include("io/github/opencubicchunks/cubicchunks/api/**")
     }
+    from("LICENSE")
 }
 
 processResources {
