@@ -69,6 +69,7 @@ public class CubicRenderClientGameTest implements FabricClientGameTest {
             if (stage("frames")) frames(context, world);
             if (stage("scans")) blockScans(context, world);
             if (stage("viewdistance")) viewDistance(context, world);
+            if (stage("interact")) interact(context, world);
             if (stage("flight")) flight(context, world);
             if (stage("shaders")) shaders(context, world);
             if (stage("voxy")) voxy(context, world);
@@ -1145,6 +1146,40 @@ public class CubicRenderClientGameTest implements FabricClientGameTest {
             context.waitTicks(LOAD_TICKS);
             LOGGER.info("[cc-gametest] view distance: render distance {}: {}", distance, loadedCounts(context, world));
         }
+    }
+
+    /**
+     * Using and breaking blocks above the dimension type's top (Y 319 here; Orbis Terrarum's is -81), as a player does, by the client's
+     * packets: a creative player at Y 1000 flips a lever and breaks the stone beside it. Vanilla's server refused both there ("The height
+     * limit for building is 319"); in a cubic level the world's own heights count.
+     */
+    private static void interact(ClientGameTestContext context, TestSingleplayerContext world) {
+        // the cubes there load first (as a spectator, who does not fall): a setblock in a cube not loaded does nothing
+        world.getServer().runCommand("tp @a 0.5 1000 2.5 180 40");
+        context.waitTicks(LOAD_TICKS);
+        world.getServer().runCommand(fill(-2, 999, -2, 2, 999, 2, "stone"));
+        world.getServer().runCommand("setblock 0 1000 0 minecraft:lever[face=floor]");
+        world.getServer().runCommand("setblock 1 1000 0 minecraft:stone");
+        world.getServer().runCommand("gamemode creative @a");
+        world.getServer().runCommand("tp @a 0.5 1000 2.5 180 40"); // standing on the stone
+        context.waitTicks(40);
+        context.runOnClient(mc -> mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND,
+                new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(0.5, 1000.1, 0.5), net.minecraft.core.Direction.UP,
+                        new BlockPos(0, 1000, 0), false)));
+        context.waitTicks(20);
+        context.runOnClient(mc -> mc.gameMode.startDestroyBlock(new BlockPos(1, 1000, 0), net.minecraft.core.Direction.UP));
+        context.waitTicks(20);
+        String server = world.getServer().computeOnServer(sv -> {
+            var level = sv.overworld();
+            var cube = ((CubeSource) level.getChunkSource()).cc_getCube(0, Coords.blockToCube(1000), 0, ChunkStatus.FULL, false);
+            if (cube == null) return "dimension top " + level.getMaxY() + ", the cube at Y 1000 is not loaded";
+            var lever = cube.getBlockState(new BlockPos(0, 1000, 0));
+            return "dimension top " + level.getMaxY() + ", lever " + lever.getBlock() + " powered " + (lever.hasProperty(net.minecraft.world.level.block.LeverBlock.POWERED)
+                    && lever.getValue(net.minecraft.world.level.block.LeverBlock.POWERED)) + ", stone beside it now "
+                    + cube.getBlockState(new BlockPos(1, 1000, 0)).getBlock() + ", player at Y " + Math.round(sv.getPlayerList().getPlayers().getFirst().getY());
+        });
+        LOGGER.info("[cc-gametest] interact at Y 1000: {}", server);
+        world.getServer().runCommand("gamemode spectator @a");
     }
 
     /** Each server tick's length while recording (the flight stage). */

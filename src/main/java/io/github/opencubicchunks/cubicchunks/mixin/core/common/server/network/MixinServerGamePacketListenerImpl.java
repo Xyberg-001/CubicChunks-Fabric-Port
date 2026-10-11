@@ -10,6 +10,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 
 /**
  * A player's and vehicle's moves are held within what a block position holds, as vanilla holds them within 30,000,000 (see CubicHeight).
@@ -39,6 +41,23 @@ public class MixinServerGamePacketListenerImpl {
         int counted = Math.min(Math.max(packets, 1), CC_MAX_PACKETS);
         return counted * counted; // the allowance is 100 x this, against the squared distance of all the moves together
     }
+    /**
+     * Using an item on a block (opening a door, a chest, placing a block) and breaking one are refused above the level's top and below its
+     * bottom ("The height limit for building is ..."). Vanilla takes those from the dimension type; a cubic level holds blocks between its
+     * world's own heights (see MixinLevel.isOutsideBuildHeight), and a generator may give its dimension type a height that only fits its
+     * terrain (Orbis Terrarum's is Y -2032 to -81): in an Orbis world with the ground at Y 0, no door opened and no block broke.
+     */
+    @WrapOperation(method = {"handleUseItemOn", "handlePlayerAction"},
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;getMaxY()I"))
+    private int cc_buildTop(net.minecraft.server.level.ServerLevel level, Operation<Integer> original) {
+        return ((CanBeCubic) level).cc_isCubic() ? CubicHeight.maxY(level) : original.call(level);
+    }
+
+    @WrapOperation(method = "handleUseItemOn", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;getMinY()I"))
+    private int cc_buildBottom(net.minecraft.server.level.ServerLevel level, Operation<Integer> original) {
+        return ((CanBeCubic) level).cc_isCubic() ? CubicHeight.minY(level) : original.call(level);
+    }
+
     @ModifyConstant(method = "clampHorizontal", constant = @Constant(doubleValue = 3.0E7))
     private static double cc_clampHorizontalMax(double limit) {
         return CubicHeight.movementLimit();
