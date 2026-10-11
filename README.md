@@ -41,10 +41,10 @@ In `config/cubicworlds_common.toml`:
 ## For mod developers
 
 Register a cube generator for your world type and Cubic Worlds asks it for each cube's terrain. Compile against
-`cubicworlds-fabric-<version>-api.jar` from [Releases](https://github.com/Xyberg-001/CubicChunks-Fabric-Port/releases). Guide and
+`cubicworlds-fabric-<version>-api.jar` from [Releases](https://github.com/Xyberg-001/CubicWorlds/releases). Guide and
 reference: [docs/API.md](docs/API.md).
 
 ---
 
 Continued from [OpenCubicChunks/CubicChunks3](https://github.com/OpenCubicChunks/CubicChunks3) (MIT) under its own name; not an official
-Cubic Chunks project. Report problems [here](https://github.com/Xyberg-001/CubicChunks-Fabric-Port/issues).
+Cubic Chunks project. Report problems [here](https://github.com/Xyberg-001/CubicWorlds/issues).

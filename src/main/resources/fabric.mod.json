@@ -6,8 +6,8 @@
   "description": "${mod_description}",
   "authors": ["${mod_authors}", "Xyberg-001"],
   "contact": {
-    "sources": "https://github.com/Xyberg-001/CubicChunks-Fabric-Port/tree/fabric-26.3",
-    "issues": "https://github.com/Xyberg-001/CubicChunks-Fabric-Port/issues"
+    "sources": "https://github.com/Xyberg-001/CubicWorlds/tree/fabric-26.3",
+    "issues": "https://github.com/Xyberg-001/CubicWorlds/issues"
   },
   "license": "${mod_license}",
   "environment": "*",
