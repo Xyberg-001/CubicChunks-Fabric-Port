@@ -61,6 +61,20 @@ public abstract class CubeAccess implements CloAccess {
     protected final ShortList[] postProcessing;
     private volatile boolean unsaved;
     private volatile boolean isLightCorrect;
+    /**
+     * Its sky roof has been noted (SkyRoofs.record) since its blocks last changed: noting it again as it unloads finds the same roof. A
+     * cube's roof is read block by block, column by column, on the server thread; every cube a player left behind was read again as it
+     * unloaded, which after a teleport (a whole view's cubes at once) was a quarter of the stall.
+     */
+    private volatile boolean cc_roofCurrent;
+
+    public boolean cc_roofCurrent() {
+        return this.cc_roofCurrent;
+    }
+
+    public void cc_setRoofCurrent(boolean current) {
+        this.cc_roofCurrent = current;
+    }
     protected final CubePos cubePos;
     private long inhabitedTime;
     /** The inhabited time on disk (see {@link #cc_inhabitedTimeUnsaved}). */

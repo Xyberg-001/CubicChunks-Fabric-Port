@@ -53,6 +53,7 @@ public abstract class MixinDistanceManager implements MarkableAsCubic, CubeYRang
         ((MarkableAsCubic) this.playerTicketManager).cc_setCubic();
         ((io.github.opencubicchunks.cubicchunks.mixin.access.common.ThrottlingChunkTaskDispatcherAccess) this.ticketDispatcher)
                 .cc_setMaxChunksInExecution(PLAYER_TICKETS_IN_FLIGHT);
+        ((io.github.opencubicchunks.cubicchunks.world.level.CubicTicketStorage) this.ticketStorage).cc_staggerPlayerTicketRemovals();
     }
 
     /**
@@ -159,6 +160,7 @@ public abstract class MixinDistanceManager implements MarkableAsCubic, CubeYRang
     }
 
     @Shadow @Final private LongSet ticketsToRelease;
+    @Shadow @Final private net.minecraft.world.level.TicketStorage ticketStorage;
     @Shadow protected abstract net.minecraft.server.level.ChunkHolder getChunk(long node);
     @Shadow @Final private net.minecraft.server.level.ThrottlingChunkTaskDispatcher ticketDispatcher;
 

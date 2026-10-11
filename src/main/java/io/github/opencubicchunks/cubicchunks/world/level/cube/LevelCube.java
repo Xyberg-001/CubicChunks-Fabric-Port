@@ -118,6 +118,7 @@ public class LevelCube extends CubeAccess implements LevelClo {
     public LevelCube(ServerLevel level, ProtoCube cube, @Nullable LevelCube.PostLoadProcessor postLoad) {
         this(level, cube.cc_getCubePos(), cube.getUpgradeData(), cube.unpackBlockTicks(), cube.unpackFluidTicks(), cube.getInhabitedTime(),
                 cube.getSections(), postLoad, cube.getBlendingData());
+        this.cc_setRoofCurrent(cube.cc_roofCurrent()); // the same sections
 
         if (!Collections.disjoint(cube.pendingBlockEntities.keySet(), cube.blockEntities.keySet())) {
             LOGGER.error("Cube at {} contains duplicated block entities", cube.cc_getCubePos());
@@ -189,6 +190,7 @@ public class LevelCube extends CubeAccess implements LevelClo {
     // TODO might be dasm-able eventually, if we get more powerful mixin tools
     @SuppressWarnings({ "checkstyle:CyclomaticComplexity", "checkstyle:NPathComplexity" }) // <-- copies structure of vanilla method
     @Override public @Nullable BlockState setBlockState(BlockPos pos, BlockState state, int flags) {
+        this.cc_setRoofCurrent(false);
         var chunkSection = this.getSection(Coords.blockToIndex(pos));
         boolean wasOnlyAir = chunkSection.hasOnlyAir();
         if (wasOnlyAir && state.isAir()) {

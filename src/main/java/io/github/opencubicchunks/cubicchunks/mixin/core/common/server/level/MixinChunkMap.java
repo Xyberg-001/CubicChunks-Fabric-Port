@@ -414,8 +414,8 @@ public abstract class MixinChunkMap extends MixinChunkStorage implements Generat
     private void cc_scheduleUnload(long cloPos, ChunkHolder holder) {
         if (((GenerationCloHolder) holder).cc_getLatestClo() instanceof CubeAccess leaving) {
             CubicLight light = ((CubeSource) level.getChunkSource()).cc_cubicLight();
-            if (light != null) {
-                light.noteRoof(leaving);
+            if (light != null && !leaving.cc_roofCurrent()) {
+                light.noteRoof(leaving); // unless its blocks are as they were when it was last noted (most land a player passes over)
             }
         }
         CompletableFuture<?> saveSync = holder.getSaveSyncFuture();

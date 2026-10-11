@@ -77,6 +77,7 @@ public final class SkyRoofs {
 
     /** Notes the cube's blocks as they are now (it was lit, or is leaving). */
     public void record(CubeAccess cube) {
+        cube.cc_setRoofCurrent(true); // before reading it: a block set while it is read marks it changed again
         CubePos cubePos = cube.cc_getCubePos();
         for (int dx = 0; dx < CubicConstants.DIAMETER_IN_SECTIONS; dx++) {
             for (int dz = 0; dz < CubicConstants.DIAMETER_IN_SECTIONS; dz++) {

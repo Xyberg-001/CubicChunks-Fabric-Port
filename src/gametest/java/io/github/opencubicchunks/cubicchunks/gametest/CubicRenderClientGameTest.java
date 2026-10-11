@@ -71,6 +71,7 @@ public class CubicRenderClientGameTest implements FabricClientGameTest {
             if (stage("viewdistance")) viewDistance(context, world);
             if (stage("interact")) interact(context, world);
             if (stage("flight")) flight(context, world);
+            if (stage("teleport")) teleports(context, world);
             if (stage("shaders")) shaders(context, world);
             if (stage("voxy")) voxy(context, world);
             if (stage("dh")) distantHorizons(context, world);
@@ -1258,6 +1259,46 @@ public class CubicRenderClientGameTest implements FabricClientGameTest {
                     20 * Math.hypot(leg[0], leg[1]), n, wall, n == 0 ? 0 : sum / 1e6 / n, n == 0 ? 0 : t[n / 2] / 1e6,
                     n == 0 ? 0 : t[Math.min(n - 1, (int) (n * 0.95))] / 1e6, n == 0 ? 0 : t[n - 1] / 1e6, over50, over250, over1000,
                     lagNanos / 1e9, loadedCounts(context, world)));
+        }
+        LOGGER.info("[cc-gametest] all flights done");
+    }
+
+    /**
+     * Teleports far over new land, three times, 15 seconds apart, at a view distance of 10: every player ticket round the old place goes and
+     * as many come round the new one, the load levels of thousands of cubes worked out again at once. Logs, for each, the longest server tick,
+     * the time spent over 50 ms a tick, and how long until the 75 cubes round the player were all held.
+     */
+    private static void teleports(ClientGameTestContext context, TestSingleplayerContext world) {
+        hookTicks();
+        context.runOnClient(mc -> {
+            mc.options.renderDistance().set(10);
+            mc.options.broadcastOptions();
+        });
+        world.getServer().runCommand("tp @a 0 40 0");
+        context.waitTicks(LOAD_TICKS);
+        LOGGER.info("[cc-gametest] teleports start");
+        for (int i = 1; i <= 3; i++) {
+            TICK_NANOS.clear();
+            recordTicks = true;
+            world.getServer().runCommand("tp @a " + (i * 5000) + " 40 0");
+            int ready = -1;
+            for (int t = 1; t <= 300; t++) {
+                context.waitTick();
+                if (ready < 0 && t % 5 == 0 && world.getServer().computeOnServer(sv -> cubesRound((CubeSource) sv.overworld().getChunkSource(),
+                        sv.getPlayerList().getPlayers().getFirst())) == 75) {
+                    ready = t;
+                }
+            }
+            recordTicks = false;
+            long[] ticks = TICK_NANOS.stream().mapToLong(Long::longValue).sorted().toArray();
+            long over = 0, sum = 0;
+            for (long n : ticks) {
+                sum += n;
+                if (n > 50_000_000L) over += n - 50_000_000L;
+            }
+            LOGGER.info(String.format(java.util.Locale.ROOT, "[cc-gametest] teleport %d: %d ticks, longest %.0f ms, mean %.1f ms, behind %.2f s, 75 cubes round the player after %s ticks",
+                    i, ticks.length, ticks.length == 0 ? 0 : ticks[ticks.length - 1] / 1e6, ticks.length == 0 ? 0 : sum / 1e6 / ticks.length, over / 1e9,
+                    ready < 0 ? "more than 300" : String.valueOf(ready)));
         }
         LOGGER.info("[cc-gametest] all flights done");
     }

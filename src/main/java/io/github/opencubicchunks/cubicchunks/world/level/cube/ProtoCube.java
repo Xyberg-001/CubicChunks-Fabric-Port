@@ -94,6 +94,7 @@ public class ProtoCube extends CubeAccess implements ProtoClo {
     @Override public native FluidState getFluidState(BlockPos pos);
 
     @Override public @Nullable BlockState setBlockState(BlockPos pos, BlockState state, int flags) {
+        this.cc_setRoofCurrent(false);
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();

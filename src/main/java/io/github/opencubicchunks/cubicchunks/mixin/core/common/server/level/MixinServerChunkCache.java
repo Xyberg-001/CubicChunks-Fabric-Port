@@ -99,6 +99,7 @@ public abstract class MixinServerChunkCache extends MixinChunkSource implements 
     private final List<LevelCube> cc_spawningCubes = new ObjectArrayList<>();
 
     @Shadow @Final public ServerLevel level;
+    @Shadow @Final private net.minecraft.world.level.TicketStorage ticketStorage;
 
     @Shadow protected abstract @Nullable ChunkHolder getVisibleChunkIfPresent(long pChunkPos);
 
@@ -271,6 +272,10 @@ public abstract class MixinServerChunkCache extends MixinChunkSource implements 
     private void cc_onTick(BooleanSupplier hasTimeLeft, boolean tickChunks, CallbackInfo ci) {
         if (this.cc_isCubic) {
             ci.cancel();
+            // player tickets waiting to go, a few a tick (MixinTicketStorage), before the levels are worked out; even while the world stands
+            // still (vanilla's purge of old tickets waits then)
+            ((io.github.opencubicchunks.cubicchunks.world.level.CubicTicketStorage) this.ticketStorage).cc_drainPlayerTicketRemovals(
+                    io.github.opencubicchunks.cubicchunks.world.level.CubicTicketStorage.PLAYER_TICKET_REMOVALS_PER_TICK);
             cc_tick(hasTimeLeft, tickChunks);
         }
     }
