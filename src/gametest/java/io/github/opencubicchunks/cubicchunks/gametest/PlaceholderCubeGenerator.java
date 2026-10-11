@@ -2,9 +2,9 @@ package io.github.opencubicchunks.cubicchunks.gametest;
 
 import java.util.concurrent.CompletableFuture;
 
-import io.github.opencubicchunks.cubicchunks.api.CubeGenerator;
-import io.github.opencubicchunks.cubicchunks.api.CubeTerrain;
-import io.github.opencubicchunks.cubicchunks.api.CubicApi;
+import io.github.xyberg001.cubicworlds.api.CubeGenerator;
+import io.github.xyberg001.cubicworlds.api.CubeTerrain;
+import io.github.xyberg001.cubicworlds.api.CubicApi;
 import io.github.opencubicchunks.cubicchunks.world.level.PlaceholderTerrain;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.FlatLevelSource;

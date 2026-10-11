@@ -119,8 +119,8 @@ public abstract class MixinLevel implements CubicLevel, MarkableAsCubic, LevelAc
             int surface = light.surfaceY(type, x, z, Integer.MIN_VALUE);
             if (surface == Integer.MIN_VALUE && (Object) this instanceof net.minecraft.server.level.ServerLevel server) {
                 // nothing loaded or noted there: the cube generator's estimate of its ground (and water), as a portal leading there needs
-                io.github.opencubicchunks.cubicchunks.api.CubeGenerator generator = io.github.opencubicchunks.cubicchunks.api.CubicApi.cubeGenerator(server);
-                io.github.opencubicchunks.cubicchunks.api.CubeGenerator.Surface estimate = generator == null ? null : generator.surface(x, z);
+                io.github.xyberg001.cubicworlds.api.CubeGenerator generator = io.github.xyberg001.cubicworlds.api.CubicApi.cubeGenerator(server);
+                io.github.xyberg001.cubicworlds.api.CubeGenerator.Surface estimate = generator == null ? null : generator.surface(x, z);
                 if (estimate != null) {
                     surface = (type == net.minecraft.world.level.levelgen.Heightmap.Types.OCEAN_FLOOR
                             || type == net.minecraft.world.level.levelgen.Heightmap.Types.OCEAN_FLOOR_WG

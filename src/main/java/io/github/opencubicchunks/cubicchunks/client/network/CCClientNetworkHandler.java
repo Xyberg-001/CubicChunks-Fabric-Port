@@ -55,7 +55,7 @@ public class CCClientNetworkHandler {
             CubicWorldSettings.setClient(payload.settings());
         });
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            if (WirePositions.vanillaPeer()) LOGGER.info("Joined a server without Cubic Chunks: its world is vanilla, block positions go the vanilla way");
+            if (WirePositions.vanillaPeer()) LOGGER.info("Joined a server without Cubic Worlds: its world is vanilla, block positions go the vanilla way");
         });
         // back to the mod's own packing for what comes next (a singleplayer world opened to LAN sends positions too)
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> WirePositions.setVanillaPeer(false));

@@ -11,7 +11,7 @@
     ]
   },
   "depends": {
-    "cubicchunks": "*",
+    "cubicworlds": "*",
     "fabric-client-gametest-api-v1": "*"
   }
 }

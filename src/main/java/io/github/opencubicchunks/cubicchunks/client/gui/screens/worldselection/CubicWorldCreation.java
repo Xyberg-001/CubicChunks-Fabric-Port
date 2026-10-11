@@ -22,7 +22,7 @@ public interface CubicWorldCreation {
     /** Whether the chosen world type can be cubic (a cube generator is registered for its overworld; see CubicApi.supportsCubes). */
     default boolean cc_supportsCubes() {
         try {
-            return io.github.opencubicchunks.cubicchunks.api.CubicApi.supportsCubes(
+            return io.github.xyberg001.cubicworlds.api.CubicApi.supportsCubes(
                     ((net.minecraft.client.gui.screens.worldselection.WorldCreationUiState) this).getSettings().selectedDimensions().overworld());
         } catch (IllegalStateException e) {
             return false; // no overworld

@@ -25,8 +25,8 @@ public class CCNetworkHandler {
             if (ServerConfigurationNetworking.canSend(handler, CCClientboundWorldSettingsPacket.TYPE)) {
                 ServerConfigurationNetworking.send(handler, new CCClientboundWorldSettingsPacket(BlockPos.PACKED_Y_LENGTH, CubicWorldSettings.server()));
             } else {
-                handler.disconnect(Component.literal("This server runs the Cubic Chunks mod, which changes how block positions are sent: "
-                        + "join with Cubic Chunks installed."));
+                handler.disconnect(Component.literal("This server runs the Cubic Worlds mod, which changes how block positions are sent: "
+                        + "join with Cubic Worlds installed."));
             }
         });
     }

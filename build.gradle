@@ -13,7 +13,7 @@ version = mod_version
 group = mod_group_id
 
 base {
-    // the jars are named for what they are: cubicchunks-fabric-<version>+<minecraft>.jar (the mod id stays cubicchunks)
+    // the jars are named for what they are: cubicworlds-fabric-<version>+<minecraft>.jar
     archivesName = mod_id + "-fabric"
 }
 
@@ -194,7 +194,7 @@ tasks.register("apiJar", Jar) {
     dependsOn("classes")
     archiveClassifier = "api"
     from(sourceSets.main.output) {
-        include("io/github/opencubicchunks/cubicchunks/api/**")
+        include("io/github/xyberg001/cubicworlds/api/**")
     }
     from("LICENSE")
 }

@@ -25,11 +25,11 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * {@code /cubicchunks forceload add|remove <pos> [<radius>]}: keeps the cubes around a block loaded, the cubic counterpart of vanilla's
+ * {@code /cubicworlds forceload add|remove <pos> [<radius>]}: keeps the cubes around a block loaded, the cubic counterpart of vanilla's
  * column-based {@code /forceload}. 26.x has no spawn chunks, so without players this is what holds cubes in memory. The tickets are vanilla
- * FORCED tickets keyed by the cube, so they persist with the level's other tickets. {@code /cubicchunks loaded} reports how many holders are
- * loaded, {@code /cubicchunks light <pos>} the server's light at a block, {@code /cubicchunks column <x> <z>} a column's blocks and
- * {@code /cubicchunks blockentities <pos> [<radius>]} the block entities of the cubes around a block, by type.
+ * FORCED tickets keyed by the cube, so they persist with the level's other tickets. {@code /cubicworlds loaded} reports how many holders are
+ * loaded, {@code /cubicworlds light <pos>} the server's light at a block, {@code /cubicworlds column <x> <z>} a column's blocks and
+ * {@code /cubicworlds blockentities <pos> [<radius>]} the block entities of the cubes around a block, by type.
  */
 public final class CubicChunksCommand {
     private static final int MAX_RADIUS = 4;
@@ -39,7 +39,7 @@ public final class CubicChunksCommand {
     private CubicChunksCommand() {}
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("cubicchunks")
+        dispatcher.register(Commands.literal("cubicworlds")
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("loaded").executes(c -> loaded(c.getSource())))
                 .then(Commands.literal("column").then(Commands.argument("x", IntegerArgumentType.integer())

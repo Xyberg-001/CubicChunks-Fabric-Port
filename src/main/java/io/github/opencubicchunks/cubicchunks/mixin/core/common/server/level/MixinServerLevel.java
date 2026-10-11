@@ -114,7 +114,7 @@ public abstract class MixinServerLevel extends MixinLevel implements CubicServer
         this.cc_checkPointsOfInterest(cubePos, status);
         boolean isFull = this.cc_poiCheckedCubes.contains(cubePos.asLong());
         if (wasFull != isFull) {
-            io.github.opencubicchunks.cubicchunks.api.CubicApi.fireCube((ServerLevel) (Object) this, cubePos.getX(), cubePos.getY(), cubePos.getZ(), isFull);
+            io.github.xyberg001.cubicworlds.api.CubicApi.fireCube((ServerLevel) (Object) this, cubePos.getX(), cubePos.getY(), cubePos.getZ(), isFull);
         }
     }
 

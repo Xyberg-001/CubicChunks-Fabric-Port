@@ -870,7 +870,7 @@ public class CubicRenderClientGameTest implements FabricClientGameTest {
         world.getServer().runCommand("fill " + Coords.cubeToMinBlock(cubeX) + " " + roofY + " " + Coords.cubeToMinBlock(cubeZ) + " "
                 + (Coords.cubeToMinBlock(cubeX) + 31) + " " + roofY + " " + (Coords.cubeToMinBlock(cubeZ) + 31) + " minecraft:stone");
         context.waitTicks(40);
-        world.getServer().runOnServer(server -> io.github.opencubicchunks.cubicchunks.api.CubicApi.releaseCube(server.overworld(), ticket, cubeX,
+        world.getServer().runOnServer(server -> io.github.xyberg001.cubicworlds.api.CubicApi.releaseCube(server.overworld(), ticket, cubeX,
                 roofCubeY, cubeZ));
         boolean gone = false;
         for (int i = 0; i < 30 && !gone; i++) {
@@ -897,8 +897,8 @@ public class CubicRenderClientGameTest implements FabricClientGameTest {
         });
         LOGGER.info("[cc-gametest] sky roof: roof cube let go {}; {}", gone, report);
         world.getServer().runOnServer(server -> {
-            io.github.opencubicchunks.cubicchunks.api.CubicApi.releaseCube(server.overworld(), ticket, cubeX, lowCubeY, cubeZ);
-            io.github.opencubicchunks.cubicchunks.api.CubicApi.releaseCube(server.overworld(), ticket, openCubeX, lowCubeY, cubeZ);
+            io.github.xyberg001.cubicworlds.api.CubicApi.releaseCube(server.overworld(), ticket, cubeX, lowCubeY, cubeZ);
+            io.github.xyberg001.cubicworlds.api.CubicApi.releaseCube(server.overworld(), ticket, openCubeX, lowCubeY, cubeZ);
         });
     }
 
@@ -944,7 +944,7 @@ public class CubicRenderClientGameTest implements FabricClientGameTest {
                         }
                     }
                 }
-                return level.dimension().identifier() + " cubic " + io.github.opencubicchunks.cubicchunks.api.CubicApi.isCubic(level) + ", Y "
+                return level.dimension().identifier() + " cubic " + io.github.xyberg001.cubicworlds.api.CubicApi.isCubic(level) + ", Y "
                         + level.getMinY() + ".." + level.getMaxY() + ", sea level " + level.getSeaLevel() + ", chunks " + level.getChunkSource().getLoadedChunksCount()
                         + ", solid samples " + solid + ", player at " + player.blockPosition();
             });
@@ -1120,7 +1120,7 @@ public class CubicRenderClientGameTest implements FabricClientGameTest {
     private static void loadCubeAndWait(ClientGameTestContext context, TestSingleplayerContext world, net.minecraft.server.level.TicketType ticket,
             int x, int y, int z) {
         java.util.concurrent.atomic.AtomicReference<java.util.concurrent.CompletableFuture<Boolean>> future = new java.util.concurrent.atomic.AtomicReference<>();
-        world.getServer().runOnServer(server -> future.set(io.github.opencubicchunks.cubicchunks.api.CubicApi.loadCube(server.overworld(), ticket, x, y, z)));
+        world.getServer().runOnServer(server -> future.set(io.github.xyberg001.cubicworlds.api.CubicApi.loadCube(server.overworld(), ticket, x, y, z)));
         for (int i = 0; i < 60 && !future.get().isDone(); i++) {
             context.waitTicks(10);
         }

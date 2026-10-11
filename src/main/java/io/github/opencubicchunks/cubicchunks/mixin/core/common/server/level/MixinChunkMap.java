@@ -525,7 +525,7 @@ public abstract class MixinChunkMap extends MixinChunkStorage implements Generat
 
     /** Saves a cubic level's column if its cube generator places structures and it has its structure starts (see ColumnSerializer). */
     private boolean cc_saveColumn(ChunkAccess column) {
-        if (!io.github.opencubicchunks.cubicchunks.api.CubicApi.usesStructures(level) || !ColumnSerializer.worthSaving(column) || !column.tryMarkSaved()) {
+        if (!io.github.xyberg001.cubicworlds.api.CubicApi.usesStructures(level) || !ColumnSerializer.worthSaving(column) || !column.tryMarkSaved()) {
             return false;
         }
         ChunkPos pos = column.getPos();

@@ -1,4 +1,4 @@
-package io.github.opencubicchunks.cubicchunks.api;
+package io.github.xyberg001.cubicworlds.api;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +17,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 /**
- * What other mods use of Cubic Chunks: whether a level is cubic and the heights its world holds, and how to generate the terrain of a cubic
+ * What other mods use of Cubic Worlds: whether a level is cubic and the heights its world holds, and how to generate the terrain of a cubic
  * level's cubes. Everything in this package is the public API (kept in its own jar to compile against: ./gradlew apiJar); the rest of Cubic
  * Chunks may change at any time.
  */
@@ -32,13 +32,13 @@ public final class CubicApi {
     private CubicApi() {
     }
 
-    /** Whether the level is cubic (its world was made with Cubic Chunks on). */
+    /** Whether the level is cubic (its world was made with Cubic Worlds on). */
     public static boolean isCubic(Level level) {
         return ((CanBeCubic) level).cc_isCubic();
     }
 
     /**
-     * How far the world border reaches from 0 on x and z with Cubic Chunks installed, in every world (block positions are packed with more
+     * How far the world border reaches from 0 on x and z with Cubic Worlds installed, in every world (block positions are packed with more
      * bits for Y, so they hold less far out than vanilla's 30 million; the border stops short of that).
      */
     public static int borderReach() {
@@ -57,7 +57,7 @@ public final class CubicApi {
 
     /**
      * Makes cubic levels whose chunk generator is of this class (or a subclass) generate their cubes' terrain with the factory's cube
-     * generator instead of Cubic Chunks' own placeholder terrain. Register at startup (a mod initializer).
+     * generator instead of Cubic Worlds' own placeholder terrain. Register at startup (a mod initializer).
      */
     public static void registerCubeGenerator(Class<? extends ChunkGenerator> chunkGeneratorClass, CubeGenerator.Factory factory) {
         FACTORIES.put(chunkGeneratorClass, factory);
@@ -65,8 +65,8 @@ public final class CubicApi {
     }
 
     /**
-     * Whether worlds of this chunk generator can be cubic: a cube generator is registered for its class (or a superclass). Cubic Chunks
-     * makes the storage, not the terrain; a world type without a cube generator is made without Cubic Chunks (the world creation screen
+     * Whether worlds of this chunk generator can be cubic: a cube generator is registered for its class (or a superclass). Cubic Worlds
+     * makes the storage, not the terrain; a world type without a cube generator is made without Cubic Worlds (the world creation screen
      * greys the switch out, and a server makes such a world vanilla).
      */
     public static boolean supportsCubes(ChunkGenerator chunkGenerator) {
@@ -78,7 +78,7 @@ public final class CubicApi {
         return false;
     }
 
-    /** The cube generator of a cubic level, or null if its chunk generator has none (Cubic Chunks' placeholder terrain then). */
+    /** The cube generator of a cubic level, or null if its chunk generator has none (Cubic Worlds' placeholder terrain then). */
     public static @Nullable CubeGenerator cubeGenerator(ServerLevel level) {
         CubeGenerator generator = GENERATORS.computeIfAbsent(level, CubicApi::create);
         return generator == NONE ? null : generator;
@@ -131,7 +131,7 @@ public final class CubicApi {
         LISTENERS.add(listener);
     }
 
-    /** Cubic Chunks calls this as a cube becomes full (loaded) or stops being so (unloaded). */
+    /** Cubic Worlds calls this as a cube becomes full (loaded) or stops being so (unloaded). */
     public static void fireCube(ServerLevel level, int cubeX, int cubeY, int cubeZ, boolean loaded) {
         for (CubeListener listener : LISTENERS) {
             try {
@@ -238,7 +238,7 @@ public final class CubicApi {
         return ((io.github.opencubicchunks.cubicchunks.server.level.CubicChunkMap) level.getChunkSource().chunkMap).cc_pendingCubeWrites();
     }
 
-    /** Forgets a level's cube generator as the level unloads (Cubic Chunks calls this). */
+    /** Forgets a level's cube generator as the level unloads (Cubic Worlds calls this). */
     public static void forgetLevel(ServerLevel level) {
         GENERATORS.remove(level);
     }

@@ -1,4 +1,4 @@
-package io.github.opencubicchunks.cubicchunks.api;
+package io.github.xyberg001.cubicworlds.api;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;

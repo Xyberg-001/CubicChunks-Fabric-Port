@@ -9,7 +9,7 @@ import io.github.notstirred.dasm.api.annotations.redirect.redirects.AddMethodToS
 import io.github.notstirred.dasm.api.annotations.redirect.redirects.AddTransformToSets;
 import io.github.notstirred.dasm.api.annotations.selector.Ref;
 import io.github.notstirred.dasm.api.annotations.transform.TransformFromMethod;
-import io.github.opencubicchunks.cubicchunks.api.CubicApi;
+import io.github.xyberg001.cubicworlds.api.CubicApi;
 import io.github.opencubicchunks.cubicchunks.mixin.dasmsets.ChunkInCubicContextSet;
 import io.github.opencubicchunks.cubicchunks.world.level.cube.status.CubeStatusTasks;
 import net.minecraft.server.level.GenerationChunkHolder;

@@ -1,6 +1,6 @@
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-package io.github.opencubicchunks.cubicchunks.api.client;
+package io.github.xyberg001.cubicworlds.api.client;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 

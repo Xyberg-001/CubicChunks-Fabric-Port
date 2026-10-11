@@ -1,4 +1,4 @@
-package io.github.opencubicchunks.cubicchunks.api;
+package io.github.xyberg001.cubicworlds.api;
 
 import java.util.concurrent.CompletableFuture;
 

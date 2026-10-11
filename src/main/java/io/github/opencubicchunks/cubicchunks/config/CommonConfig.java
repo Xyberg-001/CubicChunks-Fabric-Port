@@ -8,10 +8,12 @@ import io.github.opencubicchunks.cubicchunks.CubicChunks;
 import net.fabricmc.loader.api.FabricLoader;
 
 public class CommonConfig extends BaseConfig {
-    private static final String FILE_NAME = "cubicchunks_common.toml";
+    private static final String FILE_NAME = "cubicworlds_common.toml";
+    private static final String OLD_FILE_NAME = "cubicchunks_common.toml";
     // TODO forge/fabric-agnostic method for getting config directory
     // Note that this relies on IS_IN_TEST being set before this class is classloaded
     private static final File FILE_PATH = CubicChunks.IS_IN_TEST ? null : new File(FabricLoader.getInstance().getConfigDir().toFile(), FILE_NAME);
+    private static final File OLD_FILE_PATH = CubicChunks.IS_IN_TEST ? null : new File(FabricLoader.getInstance().getConfigDir().toFile(), OLD_FILE_NAME);
 
     private static final String KEY_GENERAL = "general";
     private static final String KEY_VERTICAL_VIEW_DISTANCE = KEY_GENERAL + ".verticalViewDistance";
@@ -126,9 +128,11 @@ public class CommonConfig extends BaseConfig {
             // Skip file access when running in a test environment; tests should manually update relevant config values before running game code.
             return new CommonConfig(config);
         }
-        // Read existing values to the config
+        // Read existing values to the config; an install from before the rename to Cubic Worlds has them in the old file (left in place)
         if (FILE_PATH.exists()) {
             read(FILE_PATH, config);
+        } else if (OLD_FILE_PATH.exists()) {
+            read(OLD_FILE_PATH, config);
         }
         var commonConfig = new CommonConfig(config);
         // Write the config again even if we loaded an existing file, in case any keys were missing or invalid

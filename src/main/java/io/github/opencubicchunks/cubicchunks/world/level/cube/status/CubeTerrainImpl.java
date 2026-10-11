@@ -1,7 +1,7 @@
 package io.github.opencubicchunks.cubicchunks.world.level.cube.status;
 
 import io.github.opencubicchunks.cc_core.utils.Coords;
-import io.github.opencubicchunks.cubicchunks.api.CubeTerrain;
+import io.github.xyberg001.cubicworlds.api.CubeTerrain;
 import io.github.opencubicchunks.cubicchunks.world.level.cube.CubeAccess;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -16,7 +16,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.ticks.ScheduledTick;
 
 /**
- * A cube being generated, for a {@link io.github.opencubicchunks.cubicchunks.api.CubeGenerator}: writes go straight into the sections'
+ * A cube being generated, for a {@link io.github.xyberg001.cubicworlds.api.CubeGenerator}: writes go straight into the sections'
  * palettes (the cube is still a proto cube on a generation thread), and each touched section's counts are worked out once at the end
  * ({@link #finish}), as vanilla's noise step does.
  */

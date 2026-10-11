@@ -1,26 +1,26 @@
-# Cubic Chunks Fabric Port: API for mod developers
+# Cubic Worlds: API for mod developers
 
-Your mod keeps its own world type and chunk generator; Cubic Chunks asks it for the terrain of each cube.
+Your mod keeps its own world type and chunk generator; Cubic Worlds asks it for the terrain of each cube.
 
-**1. Compile against the API.** The API jar (`cubicchunks-fabric-<version>-api.jar`, attached to each release, or `./gradlew apiJar`) holds only
-the `io.github.opencubicchunks.cubicchunks.api` package, which is the public API; everything else in Cubic Chunks may change at any time.
+**1. Compile against the API.** The API jar (`cubicworlds-fabric-<version>-api.jar`, attached to each release, or `./gradlew apiJar`) holds only
+the `io.github.xyberg001.cubicworlds.api` package, which is the public API; everything else in Cubic Worlds may change at any time.
 
 ```groovy
 dependencies {
-    modCompileOnly files("libs/cubicchunks-fabric-1.0.0+26.3-api.jar")
+    modCompileOnly files("libs/cubicworlds-fabric-1.0.0+26.3-api.jar")
 }
 ```
 
-In `fabric.mod.json`, `"suggests": { "cubicchunks": "*" }` keeps Cubic Chunks optional (or put it under `depends` if your mod needs it).
+In `fabric.mod.json`, `"suggests": { "cubicworlds": "*" }` keeps Cubic Worlds optional (or put it under `depends` if your mod needs it).
 
 **2. Register a cube generator** for your chunk generator's class at startup. Only the overworld is cubic, so it is your world type's
 overworld generator that counts: a world is cubic only when its overworld's chunk generator has a cube generator registered, and the
 levels of every other dimension (the Nether, the End, your own) stay vanilla chunks, with `CubicApi.isCubic` false for them. Keep the
-Cubic Chunks classes in a class of their own that is only touched when the mod is there, so your mod still loads without it:
+Cubic Worlds classes in a class of their own that is only touched when the mod is there, so your mod still loads without it:
 
 ```java
 // in your ModInitializer
-if (FabricLoader.getInstance().isModLoaded("cubicchunks")) MyCubicSupport.register();
+if (FabricLoader.getInstance().isModLoaded("cubicworlds")) MyCubicSupport.register();
 
 final class MyCubicSupport {
     static void register() {
@@ -77,7 +77,7 @@ final class MyCubeGenerator implements CubeGenerator {
 |---|---|
 | `isCubic(level)` | Whether a level is cubic. |
 | `minY(level)`, `maxY(level)` | The heights a level's world holds. Use these rather than `Level.getMinY/getMaxY`, which report the dimension type's. |
-| `borderReach()` | How far x and z reach with Cubic Chunks installed (in every world). |
+| `borderReach()` | How far x and z reach with Cubic Worlds installed (in every world). |
 | `supportsCubes(chunkGenerator)` | Whether worlds of a chunk generator can be cubic (a cube generator is registered for it). |
 | `cubeGenerator(level)`, `usesStructures(level)` | A cubic level's cube generator, and whether it places structures. |
 | `column(level, chunkX, chunkZ, status)` | A column (it holds the structure starts and references) if it has reached the status; never waits. |
@@ -88,9 +88,9 @@ final class MyCubeGenerator implements CubeGenerator {
 | `pendingCubeWrites(level)` | Cube and column writes still queued for the disk. |
 
 **`CubicClientApi.isNewWorldCubic(state)`**: whether the world being set up on the world creation screen will be cubic, so your own world
-settings can follow the Cubic Chunks tab.
+settings can follow the Cubic Worlds tab.
 
-## Building Cubic Chunks
+## Building Cubic Worlds
 
 JDK 25. Clone with `--recursive` (the `CubicChunksCore` submodule), then `./gradlew jar` (the mod) and `./gradlew apiJar` (the API jar);
 both land in `build/libs`. `./gradlew runClientGameTest` runs the client game tests.

@@ -85,7 +85,7 @@ public record CubicWorldSettings(boolean cubic, int minY, int maxY, List<String>
         }
         if (this.minY < lowestY() || this.maxY > highestY()) {
             return "the world holds Y " + this.minY + " to " + this.maxY + ", beyond what this game can (Y " + lowestY() + " to "
-                    + highestY() + "): set heightLimit = " + CommonConfig.HEIGHT_LIMIT_TALL + " in config/cubicchunks_common.toml and restart";
+                    + highestY() + "): set heightLimit = " + CommonConfig.HEIGHT_LIMIT_TALL + " in config/cubicworlds_common.toml and restart";
         }
         return null;
     }
@@ -158,8 +158,8 @@ public record CubicWorldSettings(boolean cubic, int minY, int maxY, List<String>
             source = "a new world, from the config";
         }
         if (saved.isEmpty() && settings.cubic && settings != OLD_CUBIC && overworldGenerator != null
-                && !io.github.opencubicchunks.cubicchunks.api.CubicApi.supportsCubes(overworldGenerator)) {
-            CubicChunks.LOGGER.warn("World {}: made without Cubic Chunks, its world type ({}) has no cube generator; Cubic Chunks is for world types "
+                && !io.github.xyberg001.cubicworlds.api.CubicApi.supportsCubes(overworldGenerator)) {
+            CubicChunks.LOGGER.warn("World {}: made without Cubic Worlds, its world type ({}) has no cube generator; Cubic Worlds is for world types "
                     + "that bring their own cubic terrain (a mod registers it, see CubicApi)", storage.getLevelId(), overworldGenerator.getClass().getName());
             settings = VANILLA;
             source = "a new world whose world type has no cubic terrain";
@@ -177,7 +177,7 @@ public record CubicWorldSettings(boolean cubic, int minY, int maxY, List<String>
         }
         String problem = settings.problem();
         if (problem != null) {
-            throw new IllegalStateException("Cubic Chunks can't load this world: " + problem);
+            throw new IllegalStateException("Cubic Worlds can't load this world: " + problem);
         }
         if (saved.isEmpty()) {
             WorldConfig.write(worldFolder, settings);

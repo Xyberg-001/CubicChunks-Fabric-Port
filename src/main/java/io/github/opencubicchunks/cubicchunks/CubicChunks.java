@@ -16,6 +16,8 @@ import net.fabricmc.api.ModInitializer;
 
 /** The mod's entry point on both sides. */
 public class CubicChunks extends CubicChunksBase implements ModInitializer {
+    /** The mod's id (Cubic Worlds), which names its network channels; it hides CubicChunksBase's "cubicchunks". */
+    public static final String MODID = "cubicworlds";
     /**
      * true when running in a junit test, false otherwise.
      */
@@ -49,7 +51,7 @@ public class CubicChunks extends CubicChunksBase implements ModInitializer {
         CCNetworkHandler.register();
         io.github.opencubicchunks.cubicchunks.compat.dh.DhCubes.init();
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents.UNLOAD.register((server, level) ->
-                io.github.opencubicchunks.cubicchunks.api.CubicApi.forgetLevel(level));
+                io.github.xyberg001.cubicworlds.api.CubicApi.forgetLevel(level));
         CommandRegistrationCallback.EVENT.register((dispatcher, registries, environment) -> CubicChunksCommand.register(dispatcher));
     }
 
