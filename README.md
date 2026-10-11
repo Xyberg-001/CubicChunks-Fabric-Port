@@ -1,4 +1,4 @@
-# Cubic Chunks 3
+# Cubic Chunks Fabric Port
 
 ## This fork: Fabric, Minecraft 26.3 (branch `fabric-26.3`)
 
@@ -21,7 +21,7 @@ out, and a server makes such a world vanilla (with a line in its log saying why)
 
 ### Playing an Orbis Terrarum world at true height (beta)
 
-Download `cubicchunks-<version>+26.3.jar` from [Releases](https://github.com/Xyberg-001/CubicChunks3/releases). It is a beta: keep
+Download `cubicchunks-<version>+26.3.jar` from [Releases](https://github.com/Xyberg-001/CubicChunks-Fabric-Port/releases). It is a beta: keep
 backups of worlds you care about.
 
 1. Install Fabric Loader, Fabric API, [Orbis Terrarum](https://modrinth.com/mod/orbis-terrarum) 1.1.0 or later (the 26.3 jar) and this
