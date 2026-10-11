@@ -27,9 +27,14 @@ public class CommonConfig extends BaseConfig {
     /** The height limits the game can run with (see {@link #getHeightLimit}). */
     public static final int HEIGHT_LIMIT_NORMAL = 8192;
     public static final int HEIGHT_LIMIT_TALL = 32768;
-    /** A new cubic world's heights unless chosen otherwise: within the normal limit, less the few hundred blocks it keeps free at each end. */
-    public static final int DEFAULT_NEW_WORLD_MIN_Y = -7500;
-    public static final int DEFAULT_NEW_WORLD_MAX_Y = 7500;
+    /** The limit a new install gets: tall enough for the Earth at 1:1 (Everest's top, the Mariana Trench's floor). */
+    public static final int DEFAULT_HEIGHT_LIMIT = HEIGHT_LIMIT_TALL;
+    /** A new cubic world's heights unless chosen otherwise: the deepest sea floor to above the highest summit, at 1:1. */
+    public static final int DEFAULT_NEW_WORLD_MIN_Y = -11000;
+    public static final int DEFAULT_NEW_WORLD_MAX_Y = 9000;
+    /** The heights of cube worlds made before worlds kept their own: within the normal limit (the default then). */
+    public static final int OLD_WORLD_MIN_Y = -7500;
+    public static final int OLD_WORLD_MAX_Y = 7500;
 
     private final CommentedConfig config;
 
@@ -45,12 +50,13 @@ public class CommonConfig extends BaseConfig {
         config.setComment(KEY_VERTICAL_VIEW_DISTANCE, """
                  The vertical view distance for players in Cubic Chunks dimensions (similar to vanilla render distance for the horizontal axes).\
                 """);
-        config.set(KEY_HEIGHT_LIMIT, HEIGHT_LIMIT_NORMAL);
+        config.set(KEY_HEIGHT_LIMIT, DEFAULT_HEIGHT_LIMIT);
         config.setComment(KEY_HEIGHT_LIMIT, """
                  How high and deep any cubic world can reach, read when the game starts (a change needs a restart). Block positions are packed into
                  64 bits everywhere, so height and horizontal reach trade off:
                      8192  - cubic worlds can hold up to about Y -7900 to 7900, and x and z reach about 16.7 million blocks from the centre.
-                     32768 - cubic worlds can hold up to about Y -32400 to 32400, and x and z reach about 8.4 million blocks from the centre.
+                     32768 - cubic worlds can hold up to about Y -32400 to 32400, and x and z reach about 8.4 million blocks from the centre
+                             (the default: room for the Earth at 1:1, from the deepest sea floor to the top of Everest).
                  (A few hundred blocks at each end are kept free: cubes just beyond a world's heights load too.) A server and the players joining it
                  must use the same value; a world made for 32768 needs it to load.\
                 """);
@@ -84,9 +90,10 @@ public class CommonConfig extends BaseConfig {
         return config.getInt(KEY_VERTICAL_VIEW_DISTANCE);
     }
 
-    /** {@link #HEIGHT_LIMIT_NORMAL} or {@link #HEIGHT_LIMIT_TALL}: any other value is read as the normal limit. */
+    /** {@link #HEIGHT_LIMIT_NORMAL} or {@link #HEIGHT_LIMIT_TALL}: any other value is read as the default, {@link #DEFAULT_HEIGHT_LIMIT}. */
     public int getHeightLimit() {
-        return config.getInt(KEY_HEIGHT_LIMIT) == HEIGHT_LIMIT_TALL ? HEIGHT_LIMIT_TALL : HEIGHT_LIMIT_NORMAL;
+        int limit = config.getInt(KEY_HEIGHT_LIMIT);
+        return limit == HEIGHT_LIMIT_NORMAL || limit == HEIGHT_LIMIT_TALL ? limit : DEFAULT_HEIGHT_LIMIT;
     }
 
     public boolean shouldGenerateNewWorldsAsCC() {

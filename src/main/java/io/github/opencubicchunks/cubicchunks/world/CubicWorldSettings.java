@@ -48,9 +48,8 @@ public record CubicWorldSettings(boolean cubic, int minY, int maxY, List<String>
     public boolean cubicIn(ResourceKey<Level> dimension) {
         return this.cubic && this.dimensions.contains(dimension.identifier().toString());
     }
-    /** Cube worlds made before worlds kept their own settings get the config's default heights. */
-    private static final CubicWorldSettings OLD_CUBIC = new CubicWorldSettings(true, CommonConfig.DEFAULT_NEW_WORLD_MIN_Y,
-            CommonConfig.DEFAULT_NEW_WORLD_MAX_Y);
+    /** Cube worlds made before worlds kept their own settings get the heights new worlds had then. */
+    private static final CubicWorldSettings OLD_CUBIC = new CubicWorldSettings(true, CommonConfig.OLD_WORLD_MIN_Y, CommonConfig.OLD_WORLD_MAX_Y);
 
     private static volatile @Nullable CubicWorldSettings server;
     private static volatile @Nullable CubicWorldSettings client;
