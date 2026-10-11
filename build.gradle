@@ -13,7 +13,8 @@ version = mod_version
 group = mod_group_id
 
 base {
-    archivesName = mod_id
+    // the jars are named for what they are: cubicchunks-fabric-<version>+<minecraft>.jar (the mod id stays cubicchunks)
+    archivesName = mod_id + "-fabric"
 }
 
 javaHeaders {

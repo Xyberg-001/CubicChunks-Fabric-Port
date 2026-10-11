@@ -39,12 +39,12 @@ while the Nether and the End stay as they always are. It is a beta: keep backups
 
 Your mod keeps its own world type and chunk generator; Cubic Chunks asks it for the terrain of each cube.
 
-**1. Compile against the API.** The API jar (`cubicchunks-<version>-api.jar`, attached to each release, or `./gradlew apiJar`) holds only
+**1. Compile against the API.** The API jar (`cubicchunks-fabric-<version>-api.jar`, attached to each release, or `./gradlew apiJar`) holds only
 the `io.github.opencubicchunks.cubicchunks.api` package, which is the public API; everything else in Cubic Chunks may change at any time.
 
 ```groovy
 dependencies {
-    modCompileOnly files("libs/cubicchunks-1.0.0+26.3-api.jar")
+    modCompileOnly files("libs/cubicchunks-fabric-1.0.0+26.3-api.jar")
 }
 ```
 
