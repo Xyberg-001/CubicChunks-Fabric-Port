@@ -81,7 +81,59 @@ public class CubicRenderClientGameTest implements FabricClientGameTest {
         if (stage("vanillaworld")) vanillaWorld(context);
         if (stage("worldheight")) worldHeight(context);
         if (stage("unsupported")) unsupportedWorldType(context);
+        // a vanilla server to join, running apart from the test (host:port): only when one is given
+        String vanillaServer = System.getenv("CC_GT_VANILLA_SERVER");
+        if (stage("vanillaserver") && vanillaServer != null && !vanillaServer.isBlank()) vanillaServer(context, vanillaServer);
         LOGGER.info("[cc-gametest] all stages done");
+    }
+
+    /**
+     * Joining a server without Cubic Chunks (a vanilla 26.3 server, superflat, offline mode, Player0 an operator, spawn protection off): the
+     * world is vanilla, and block positions cross both ways in vanilla's layout. Server to client: blocks the server sets show at the same
+     * place. Client to server: a block broken and one placed by the client's packets land where it meant, which the server confirms by setting
+     * a marker block only if they did.
+     */
+    private static void vanillaServer(ClientGameTestContext context, String address) {
+        context.runOnClient(mc -> net.minecraft.client.gui.screens.ConnectScreen.startConnecting(new net.minecraft.client.gui.screens.TitleScreen(), mc,
+                net.minecraft.client.multiplayer.resolver.ServerAddress.parseString(address),
+                new net.minecraft.client.multiplayer.ServerData("vanilla", address, net.minecraft.client.multiplayer.ServerData.Type.OTHER), false, null));
+        context.waitFor(mc -> mc.player != null && mc.level != null, SPAWN_TICKS);
+        context.runOnClient(mc -> mc.player.connection.sendCommand("tp @s 3.5 -60 3.5"));
+        context.waitTicks(LOAD_TICKS);
+        String[] commands = {
+                "fill -12 -60 -12 12 -30 12 minecraft:air", // clear what an earlier run left
+                "setblock 2 -61 2 minecraft:grass_block",
+                "setblock 4 -61 4 minecraft:stone",
+                "setblock -9 -50 12 minecraft:gold_block",
+                "setblock 7 -40 -11 minecraft:lapis_block",
+                "item replace entity @s weapon.mainhand with minecraft:emerald_block"
+        };
+        for (String command : commands) context.runOnClient(mc -> mc.player.connection.sendCommand(command));
+        context.waitTicks(40);
+        // the client's own packets: break the grass at 2 -61 2, place an emerald block on the stone at 4 -61 4
+        context.runOnClient(mc -> mc.gameMode.startDestroyBlock(new BlockPos(2, -61, 2), net.minecraft.core.Direction.UP));
+        context.waitTicks(10);
+        context.runOnClient(mc -> mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND,
+                new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(4.5, -60.0, 4.5), net.minecraft.core.Direction.UP,
+                        new BlockPos(4, -61, 4), false)));
+        context.waitTicks(20);
+        // the server marks what it found where the client meant: diamond above each place if it is right there
+        context.runOnClient(mc -> mc.player.connection.sendCommand("execute if block 2 -61 2 minecraft:air run setblock 2 -45 2 minecraft:diamond_block"));
+        context.runOnClient(mc -> mc.player.connection.sendCommand("execute if block 4 -60 4 minecraft:emerald_block run setblock 4 -45 4 minecraft:diamond_block"));
+        context.waitTicks(40);
+        String client = context.computeOnClient(mc -> {
+            var level = mc.level;
+            return "client level cubic " + ((CanBeCubic) level).cc_isCubic() + ", Y " + level.getMinY() + ".." + level.getMaxY()
+                    + "; set by the server: -9 -50 12 " + level.getBlockState(new BlockPos(-9, -50, 12)).getBlock()
+                    + ", 7 -40 -11 " + level.getBlockState(new BlockPos(7, -40, -11)).getBlock()
+                    + "; the client's break confirmed by the server: " + level.getBlockState(new BlockPos(2, -45, 2)).getBlock()
+                    + ", the client's placing confirmed: " + level.getBlockState(new BlockPos(4, -45, 4)).getBlock()
+                    + " (placed block seen " + level.getBlockState(new BlockPos(4, -60, 4)).getBlock() + ")";
+        });
+        LOGGER.info("[cc-gametest] vanilla server: {}", client);
+        context.takeScreenshot("cc-vanilla-server");
+        context.runOnClient(mc -> mc.disconnect(new net.minecraft.client.gui.screens.TitleScreen(), false));
+        context.waitFor(mc -> mc.level == null, SPAWN_TICKS);
     }
 
     /**
