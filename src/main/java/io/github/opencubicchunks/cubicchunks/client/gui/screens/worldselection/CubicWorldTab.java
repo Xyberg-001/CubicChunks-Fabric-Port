@@ -21,6 +21,7 @@ public class CubicWorldTab extends GridLayoutTab {
     private static final Component TITLE = Component.translatable("createWorld.tab.cubicchunks.title");
     private static final Component CUBIC = Component.translatable("selectWorld.cubicChunks");
     private static final Component CUBIC_INFO = Component.translatable("selectWorld.cubicChunks.info");
+    private static final Component UNSUPPORTED = Component.translatable("selectWorld.cubicChunks.unsupported");
     private static final Component MIN_Y = Component.translatable("selectWorld.cubicChunks.minY");
     private static final Component MAX_Y = Component.translatable("selectWorld.cubicChunks.maxY");
     private static final int WIDTH = 310;
@@ -32,8 +33,8 @@ public class CubicWorldTab extends GridLayoutTab {
         Font font = Minecraft.getInstance().font;
         GridLayout.RowHelper helper = this.layout.columnSpacing(10).rowSpacing(8).createRowHelper(2);
 
-        CycleButton<Boolean> cubicButton = helper.addChild(CycleButton.onOffBuilder(choices.cc_isCubic())
-                .withTooltip(value -> Tooltip.create(CUBIC_INFO))
+        CycleButton<Boolean> cubicButton = helper.addChild(CycleButton.onOffBuilder(choices.cc_willBeCubic())
+                .withTooltip(value -> Tooltip.create(choices.cc_supportsCubes() ? CUBIC_INFO : UNSUPPORTED))
                 .create(0, 0, WIDTH, 20, CUBIC, (button, value) -> choices.cc_setCubic(value)), 2);
 
         EditBox minY = heightBox(font, MIN_Y, choices.cc_getMinY(), choices::cc_setMinY);
@@ -45,14 +46,19 @@ public class CubicWorldTab extends GridLayoutTab {
                 CubicWorldSettings.lowestY(), CubicWorldSettings.highestY(), String.format(java.util.Locale.ROOT, "%,d",
                 io.github.opencubicchunks.cubicchunks.world.level.CubicHeight.borderLimit())), font).setMaxWidth(WIDTH), 2);
 
-        uiState.addListener(state -> {
-            boolean cubic = choices.cc_isCubic();
+        // a world type without cubic terrain (no cube generator registered for it) is made vanilla: the switch shows off and cannot be turned
+        // on; the choice comes back with a world type that has it
+        Runnable update = () -> {
+            boolean cubic = choices.cc_willBeCubic();
+            cubicButton.active = choices.cc_supportsCubes();
             cubicButton.setValue(cubic);
             minY.active = cubic;
             minY.setEditable(cubic);
             maxY.active = cubic;
             maxY.setEditable(cubic);
-        });
+        };
+        update.run();
+        uiState.addListener(state -> update.run());
     }
 
     /** A box for a whole number of blocks, which hands on each value it can read (the heights are clamped when the world is made). */

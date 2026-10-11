@@ -128,10 +128,12 @@ public record CubicWorldSettings(boolean cubic, int minY, int maxY, List<String>
 
     /**
      * The settings of the world a server is starting: those saved with it; for a world from before worlds kept them, cubic if cubes were
-     * saved, vanilla if chunks were; for a new world, what the world creation screen chose or else the config. Saved with the world if they
-     * weren't already. Throws if this game can't hold the world (see {@link #problem}).
+     * saved, vanilla if chunks were; for a new world, what the world creation screen chose or else the config, but vanilla if its world type
+     * has no cube generator ({@code overworldGenerator}; see CubicApi.supportsCubes). Saved with the world if they weren't already. Throws if
+     * this game can't hold the world (see {@link #problem}).
      */
-    public static CubicWorldSettings decideForServer(LevelStorageSource.LevelStorageAccess storage) {
+    public static CubicWorldSettings decideForServer(LevelStorageSource.LevelStorageAccess storage,
+            @Nullable net.minecraft.world.level.chunk.ChunkGenerator overworldGenerator) {
         Path worldFolder = storage.getLevelPath(LevelResource.ROOT);
         Path overworld = storage.getDimensionPath(Level.OVERWORLD);
         CubicWorldSettings pending = pendingNewWorld;
@@ -155,6 +157,13 @@ public record CubicWorldSettings(boolean cubic, int minY, int maxY, List<String>
         } else {
             settings = fromConfig();
             source = "a new world, from the config";
+        }
+        if (saved.isEmpty() && settings.cubic && settings != OLD_CUBIC && overworldGenerator != null
+                && !io.github.opencubicchunks.cubicchunks.api.CubicApi.supportsCubes(overworldGenerator)) {
+            CubicChunks.LOGGER.warn("World {}: made without Cubic Chunks, its world type ({}) has no cube generator; Cubic Chunks is for world types "
+                    + "that bring their own cubic terrain (a mod registers it, see CubicApi)", storage.getLevelId(), overworldGenerator.getClass().getName());
+            settings = VANILLA;
+            source = "a new world whose world type has no cubic terrain";
         }
         if (settings.cubic && saved.isPresent() && !WorldConfig.hasDimensions(worldFolder)) {
             // saved before worlds said which of their dimensions are cubic (all were): the overworld, and any other that holds cubes

@@ -35,6 +35,7 @@ public class CubicRenderClientGameTest implements FabricClientGameTest {
     private static final int THUNDER_TICKS = 1200;
 
     @Override public void runTest(ClientGameTestContext context) {
+        PlaceholderCubeGenerator.register(); // superflat test worlds can be cubic (Cubic Chunks needs a world type with a cube generator)
         // CC_GT_MAIN=vanilla makes the main world a normal one (to compare another mod's behaviour without cubes)
         boolean mainCubic = !"vanilla".equals(System.getenv("CC_GT_MAIN"));
         try (TestSingleplayerContext world = context.worldBuilder().adjustSettings(s -> ((CubicWorldCreation) s).cc_setCubic(mainCubic)).create()) {
@@ -79,6 +80,7 @@ public class CubicRenderClientGameTest implements FabricClientGameTest {
         }
         if (stage("vanillaworld")) vanillaWorld(context);
         if (stage("worldheight")) worldHeight(context);
+        if (stage("unsupported")) unsupportedWorldType(context);
         LOGGER.info("[cc-gametest] all stages done");
     }
 
@@ -105,6 +107,31 @@ public class CubicRenderClientGameTest implements FabricClientGameTest {
             LOGGER.info("[cc-gametest] vanilla world: {}; {}", server, client);
             if (stage("frames")) framesAt(context, world, -30);
             context.takeScreenshot("cc-vanilla-world");
+        }
+    }
+
+    /**
+     * A world type with no cubic terrain (vanilla's normal world: no cube generator is registered for its chunk generator) is made without
+     * Cubic Chunks, the switch turned on or not: the creation screen says it will not be cubic, and the world comes out vanilla.
+     */
+    private static void unsupportedWorldType(ClientGameTestContext context) {
+        String[] screen = new String[1];
+        try (TestSingleplayerContext world = context.worldBuilder().adjustSettings(s -> {
+            for (var e : s.getNormalPresetList()) {
+                if (e.preset() != null && e.preset().unwrapKey().map(k -> k.identifier().toString().equals("minecraft:normal")).orElse(false)) {
+                    s.setWorldType(e);
+                    break;
+                }
+            }
+            CubicWorldCreation choices = (CubicWorldCreation) s;
+            choices.cc_setCubic(true);
+            screen[0] = "generator " + s.getSettings().selectedDimensions().overworld().getClass().getSimpleName() + ", switch on "
+                    + choices.cc_isCubic() + ", supports cubes " + choices.cc_supportsCubes() + ", will be cubic " + choices.cc_willBeCubic();
+        }).create()) {
+            String server = world.getServer().computeOnServer(sv -> "settings " + CubicWorldSettings.server() + ", server level cubic "
+                    + ((CanBeCubic) sv.overworld()).cc_isCubic() + ", generator " + sv.overworld().getChunkSource().getGenerator().getClass().getSimpleName());
+            boolean client = context.computeOnClient(mc -> ((CanBeCubic) mc.level).cc_isCubic());
+            LOGGER.info("[cc-gametest] unsupported world type: creation screen: {}; {}; client level cubic {}", screen[0], server, client);
         }
     }
 

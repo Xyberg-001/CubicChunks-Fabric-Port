@@ -2,6 +2,7 @@
     "createWorld.tab.cubicchunks.title": "Cubic Chunks",
     "selectWorld.cubicChunks": "Cubic Chunks",
     "selectWorld.cubicChunks.info": "Stores the world in 32-block cubes, so it can be far taller and deeper than vanilla. Fixed once the world is made; players need Cubic Chunks to join it.",
+    "selectWorld.cubicChunks.unsupported": "This world type has no cubic terrain, so it is made without Cubic Chunks. Cubic Chunks is for world types that bring their own (Orbis Terrarum's does).",
     "selectWorld.cubicChunks.minY": "Lowest Y",
     "selectWorld.cubicChunks.maxY": "Highest Y",
     "selectWorld.cubicChunks.range": "Cubic worlds in this game can reach from Y %s to %s, and %s blocks out from 0 on x and z (the world border; vanilla reaches 29,999,984). The heightLimit setting in config/cubicchunks_common.toml decides this: a taller limit reaches less far out (restart to change it).",

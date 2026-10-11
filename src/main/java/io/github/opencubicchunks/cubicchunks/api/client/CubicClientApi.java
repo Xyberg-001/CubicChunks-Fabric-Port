@@ -10,6 +10,6 @@ public final class CubicClientApi {
 
     /** Whether the world being set up on the world creation screen will be cubic (its Cubic Chunks tab, as it stands now). */
     public static boolean isNewWorldCubic(WorldCreationUiState state) {
-        return state instanceof CubicWorldCreation choices && choices.cc_isCubic();
+        return state instanceof CubicWorldCreation choices && choices.cc_willBeCubic();
     }
 }

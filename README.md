@@ -1,5 +1,47 @@
 # Cubic Chunks 3
 
+## This fork: Fabric, Minecraft 26.3 (branch `fabric-26.3`)
+
+A working port of Cubic Chunks 3 to Fabric for Minecraft 26.3, made for [Orbis Terrarum](https://modrinth.com/mod/orbis-terrarum)
+(the real Earth at 1:1, where mountains need far more height than vanilla's).
+
+**It is an engine, not a world type.** Cubic Chunks stores the world in 32-block cubes so it can be thousands of blocks tall and deep,
+and it loads, lights, saves, sends and renders those cubes. It does not make terrain: a world is cubic only when its world type brings
+its own cube generator (Orbis Terrarum's does). For any other world type the Cubic Chunks switch on the world creation screen is greyed
+out, and a server makes such a world vanilla (with a line in its log saying why).
+
+- **Every player needs it** to join a cubic world. Worlds made without it stay joinable with plain Minecraft.
+- **Only the overworld is cubic.** The Nether and the End keep vanilla's chunks.
+- **Height:** each world chooses its lowest and highest Y when it is made, within `heightLimit` in `config/cubicchunks_common.toml`
+  (8192 or 32768). A taller limit reaches less far out on x and z, because block positions are packed into 64 bits.
+- **Works with** Sodium, Iris, Voxy (it shows Y -4096 to 4095 of a cubic world) and Distant Horizons (a 4096-block window, set with
+  `distantHorizonsMinY`).
+
+### Giving your world type cubic terrain
+
+Compile against the API jar (`./gradlew apiJar`, package `io.github.opencubicchunks.cubicchunks.api`) and register a cube generator for
+your chunk generator's class in your mod initializer:
+
+```java
+CubicApi.registerCubeGenerator(MyChunkGenerator.class, (level, chunkGenerator) -> new MyCubeGenerator(level));
+```
+
+A `CubeGenerator` fills one 32x32x32 cube at a time:
+
+- `generate(CubeTerrain)`: the terrain, on a world generation thread (the returned future may finish later, after a download).
+- `decorate(CubeTerrain)`: trees, ores and the like, once the cubes around it have their terrain; writes only its own cube.
+- `usesStructures()`: true to have the level's columns work out vanilla structure starts and references (place their blocks yourself in
+  `decorate`, reading the starts with `CubicApi.column`).
+- `surface(x, z)`: what a column looks like from afar, for Distant Horizons.
+
+`CubicApi` also tells whether a level is cubic (`isCubic`), its heights (`minY`, `maxY`), whether a world type supports cubes
+(`supportsCubes`), and when cubes load and unload (`addCubeListener`). `CubicClientApi.isNewWorldCubic` tells the world creation screen's
+choice. Everything outside the `api` package may change at any time.
+
+---
+
+*The upstream project's README follows.*
+
 ## Not yet usable or functional, don't try.
 
 Rewrite of the previous rewrite, targeting NeoForge/MC 1.21.6. 

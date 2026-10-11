@@ -38,7 +38,9 @@ public abstract class MixinMinecraftServer {
     /** Whether the world is cubic, and its heights, are settled before its levels are made (see CubicWorldSettings). */
     @Inject(method = "createLevels", at = @At("HEAD"))
     private void cc_decideWorldSettings(CallbackInfo ci) {
-        CubicWorldSettings.decideForServer(this.storageSource);
+        net.minecraft.world.level.dimension.LevelStem overworld = ((MinecraftServer) (Object) this).registryAccess()
+                .lookupOrThrow(net.minecraft.core.registries.Registries.LEVEL_STEM).getValue(net.minecraft.world.level.dimension.LevelStem.OVERWORLD);
+        CubicWorldSettings.decideForServer(this.storageSource, overworld == null ? null : overworld.generator());
     }
 
     @Inject(method = "stopServer", at = @At("RETURN"))
