@@ -17,6 +17,24 @@ out, and a server makes such a world vanilla (with a line in its log saying why)
 - **Works with** Sodium, Iris, Voxy (it shows Y -4096 to 4095 of a cubic world) and Distant Horizons (a 4096-block window, set with
   `distantHorizonsMinY`).
 
+### Playing an Orbis Terrarum world at true height (beta)
+
+Download `cubicchunks-<version>+26.3.jar` from [Releases](https://github.com/Xyberg-001/CubicChunks3/releases). It is a beta: keep
+backups of worlds you care about.
+
+1. **Use a separate Minecraft 26.3 instance** (or profile). With Cubic Chunks installed the game reads block positions differently and
+   can't join servers that don't run it.
+2. Install Fabric Loader, Fabric API, [Orbis Terrarum](https://modrinth.com/mod/orbis-terrarum) 1.1.0 or later (the 26.3 jar) and this
+   jar.
+3. **For the highest mountains**, start the game once, set `heightLimit = 32768` in `config/cubicchunks_common.toml` and restart. The
+   default 8192 holds up to about Y 7900: the Alps and the Rockies, not the Himalaya.
+4. Create World, World type Orbis Terrarum, then the **Cubic Chunks** tab: switch it on and set the lowest and highest Y (for Everest,
+   for example -500 and 9000). Sea level is at Y 0 and one block is one metre all the way up and down: nothing is squeezed.
+
+Without Voxy or Distant Horizons the world shows as far as your render distance (and `verticalViewDistance` up and down). Voxy shows
+only Y -4096 to 4095 of a cubic world, and Distant Horizons a 4096-block window, so land above or below those is missing from their far
+view until they hold more height. A server works the same way: the server and every player need this jar and the same `heightLimit`.
+
 ### Giving your world type cubic terrain
 
 Compile against the API jar (`./gradlew apiJar`, package `io.github.opencubicchunks.cubicchunks.api`) and register a cube generator for

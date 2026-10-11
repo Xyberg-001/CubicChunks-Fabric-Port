@@ -217,6 +217,8 @@ jar {
     }) {
         exclude("META-INF/MANIFEST.MF")
     }
+    // the MIT notice goes with every copy
+    from("LICENSE")
 }
 
 // The tests in src/test ran on NeoForge's test framework; ported ones go in src/test-fabric
