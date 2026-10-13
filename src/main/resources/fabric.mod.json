@@ -10,6 +10,7 @@
     "issues": "https://github.com/Xyberg-001/CubicWorlds/issues"
   },
   "license": "${mod_license}",
+  "icon": "assets/cubicworlds/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": ["io.github.opencubicchunks.cubicchunks.CubicChunks"],
