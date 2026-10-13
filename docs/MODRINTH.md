@@ -19,6 +19,7 @@ The description below is the project body (Modrinth renders Markdown).
 | Issues | https://github.com/Xyberg-001/CubicWorlds/issues |
 | External system interactions | None: no internet access, and it reads and writes no files outside the Minecraft folder (its config, and its world data in each world's `cubicchunks` folder). |
 | **Contains AI-generated content** | **Tick it.** Modrinth rule 6.1 requires it: a substantial part of the code and this description were produced with an AI assistant. |
+| **Contains derivative content** | **Tick it** (required for forks): Cubic Chunks 3, https://github.com/OpenCubicChunks/CubicChunks3; a fork continued under its own name, ported to Minecraft 26.3, with the API and renderer support added; MIT notice and credit kept. |
 | Icon | `releases/modrinth/icon.png` (512×512, 220 KiB; limit 256 KiB). The jar carries the same image. |
 | Gallery | Real in-game screenshots only (e.g. a cubic world far above or below the vanilla height limit, the Cubic Worlds tab on world creation). |
 
